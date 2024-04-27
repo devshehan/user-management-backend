@@ -5,12 +5,22 @@ import ballerina/sql;
 
 type User record {|
     readonly int id;
+
+    @sql:Column {name: "name"}
+    string name;
+
+    @sql:Column {name: "user_name"}
     string userName;
+    
+    @sql:Column {name: "email"}
     string email;
+
+    @sql:Column {name: "mobile_number"}
     string mobileNumber;
 |};
 
 type NewUser record {|
+    string name;
     string userName;
     string email;
     string mobileNumber;
@@ -56,8 +66,8 @@ service /mesaki on new http:Listener(8080) {
 
     resource function post users(NewUser newUser) returns http:Created|error {
 
-        sql:ParameterizedQuery query = `INSERT INTO users(username, email, mobilenumber) VALUES 
-                                                        (${newUser.userName}, ${newUser.email}, ${newUser.mobileNumber})`;
+        sql:ParameterizedQuery query = `INSERT INTO users(name, user_name, email, mobile_number) VALUES 
+                                                        (${newUser.name}, ${newUser.userName}, ${newUser.email}, ${newUser.mobileNumber})`;
         _ = check dbClient->execute(query);
         return http:CREATED;
     }

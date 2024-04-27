@@ -9,7 +9,8 @@ POST http://localhost:8080/mesaki/users
 Content-Type: application/json
 
 {
-    "userName": "Anura",
-    "email": "jolie@gmail.com",
-    "mobileNumber": "07423"
+    "name": "AnneDelay",
+    "userName": "cloby99",
+    "email": "cloby99@gmail.com",
+    "mobileNumber": "742321242"
 }
