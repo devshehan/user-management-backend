@@ -1,5 +1,7 @@
 import ballerina/http;
 import ballerina/time;
+import ballerinax/postgresql;
+import ballerina/sql;
 
 type User record {|
     readonly int id;
@@ -8,14 +10,11 @@ type User record {|
     string mobileNumber;
 |};
 
-table<User> key(id) users = table[
-    { "id": 1, "userName": "Shehan", "email": "hello@gmai.com", "mobileNumber": "1234" },
-    { "id": 2, "userName": "John", "email": "john@example.com", "mobileNumber": "5678" },
-    { "id": 3, "userName": "Jane", "email": "jane@example.com", "mobileNumber": "9101" },
-    { "id": 4, "userName": "Alice", "email": "alice@example.com", "mobileNumber": "1121" },
-    { "id": 5, "userName": "Bob", "email": "bob@example.com", "mobileNumber": "3141" }
-]
-;
+type NewUser record {|
+    string userName;
+    string email;
+    string mobileNumber;
+|};
 
 type ErrorDetails record {
     string message;
@@ -28,27 +27,25 @@ type UserNotFound record {|
     ErrorDetails body;
 |};
 
-type NewUser record {|
-    string userName;
-    string email;
-    string mobileNumber;
-|};
+// DATABASE CONNECTION
+postgresql:Client dbClient = check new ("localhost", "postgres", "1111", "userdb", 5432);
 
 service /mesaki on new http:Listener(8080) {
 
-    // mesaki/users
     resource function get users() returns User[]|error {
-        return users.toArray();
+        stream<User, sql:Error?> userStream = dbClient->query(`SELECT * FROM users`);
+        return from var user in userStream select user;
     }
 
     resource function get users/[int id]() returns User|UserNotFound|error {
-        User? user = users[id];
 
-        if user is () {
+        User|sql:Error user = dbClient->queryRow(`SELECT * FROM users WHERE id: ${id}`);
+        
+        if user is sql:NoRowsError {
             UserNotFound userNotFound = {
                 body: {
-                    message: string `id: ${id}`,
-                    details: string `/users/${id}`,
+                    message: string `id ${id}`,
+                    details: string `mesaki/users/${id}`,
                     timeStamp: time:utcNow()
                 }
             };
@@ -58,7 +55,10 @@ service /mesaki on new http:Listener(8080) {
     }
 
     resource function post users(NewUser newUser) returns http:Created|error {
-        users.add({id: users.length()+1, ...newUser});
+
+        sql:ParameterizedQuery query = `INSERT INTO users(username, email, mobilenumber) VALUES 
+                                                        (${newUser.userName}, ${newUser.email}, ${newUser.mobileNumber})`;
+        _ = check dbClient->execute(query);
         return http:CREATED;
     }
 }
