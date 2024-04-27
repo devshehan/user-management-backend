@@ -52,15 +52,15 @@ service / on new http:Listener(8080) {
         return from var user in userStream select user;
     }
 
-    resource function get users/[int id]() returns User|UserNotFound|error {
+    resource function get user/[int id]() returns User|UserNotFound|error {
 
-        User|sql:Error user = dbClient->queryRow(`SELECT * FROM users WHERE id: ${id}`);
+        User|sql:Error user = dbClient->queryRow(`SELECT * FROM users WHERE id = ${id}`);
         
         if user is sql:NoRowsError {
             UserNotFound userNotFound = {
                 body: {
                     message: string `id ${id}`,
-                    details: string `mesaki/users/${id}`,
+                    details: string `users/${id}`,
                     timeStamp: time:utcNow()
                 }
             };
