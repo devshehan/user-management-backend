@@ -1,15 +1,15 @@
 ### GET clients
-GET http://localhost:8080/mesaki/users
+GET http://localhost:8080/users
 
 ### GET client by id
 GET http://localhost:8080/mesaki/users/10
 
 ### Post user
-POST http://localhost:8080/mesaki/users
+POST http://localhost:8080/user
 Content-Type: application/json
 
 {
-    "name": "AnneDelay",
+    "name": "AnneDlay",
     "userName": "cloby99",
     "email": "cloby99@gmail.com",
     "mobileNumber": "742321242"

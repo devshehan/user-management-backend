@@ -40,7 +40,12 @@ type UserNotFound record {|
 // DATABASE CONNECTION
 postgresql:Client dbClient = check new ("localhost", "postgres", "1111", "userdb", 5432);
 
-service /mesaki on new http:Listener(8080) {
+@http:ServiceConfig{
+    cors: {
+        allowOrigins: ["http://localhost:3000"]
+    }
+}
+service / on new http:Listener(8080) {
 
     resource function get users() returns User[]|error {
         stream<User, sql:Error?> userStream = dbClient->query(`SELECT * FROM users`);
@@ -64,7 +69,7 @@ service /mesaki on new http:Listener(8080) {
         return user;
     }
 
-    resource function post users(NewUser newUser) returns http:Created|error {
+    resource function post user(NewUser newUser) returns http:Created|error {
 
         sql:ParameterizedQuery query = `INSERT INTO users(name, user_name, email, mobile_number) VALUES 
                                                         (${newUser.name}, ${newUser.userName}, ${newUser.email}, ${newUser.mobileNumber})`;
