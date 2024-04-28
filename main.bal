@@ -83,30 +83,30 @@ service / on new http:Listener(8080) {
         return http:NO_CONTENT;
     }
 
-    // resource function put user(int id, @http:Payload NewUser newUser) returns http:Accepted|error {
 
-    //     sql:ParameterizedQuery query = `UPDATE users SET name = ${newUser.name},
-    //                                                         user_name = ${newUser.userName},
-    //                                                         email = ${newUser.email},
-    //                                                         mobile_number = ${newUser.mobileNumber}
-    //                                                         WHERE id = ${id}
-    //                                                         `;
-
-    //     sql:ExecutionResult|sql:Error result = dbClient->execute(query);
-
-    //     if result is sql:ExecutionResult {
-    //         if result.affectedRowCount > 0 {
-    //             return http:ACCEPTED;
-    //         } else {
-    //             return error("No user found with the id: " + id.toString());
-    //         }
-    //     } else {
-    //         return error("Database error: " + result.message());
-    //     }     
-
-    // }
-
-    resource function put user(int id, @http:Payload NewUser newUser) returns http:Accepted|error {
+    resource function put user/[int id](NewUser newUser) returns http:Response|error {
         
+        sql:ParameterizedQuery query = `UPDATE users SET name = ${newUser.name},
+                                                            user_name = ${newUser.userName},
+                                                            email = ${newUser.email},
+                                                            mobile_number = ${newUser.mobileNumber}
+                                                            WHERE id = ${id}
+                                                            `;
+        
+        sql:ExecutionResult|sql:Error result = dbClient->execute(query);
+
+        http:Response response = new;
+        if result is sql:ExecutionResult {
+            if result.affectedRowCount > 0 {
+                response.statusCode = 202; 
+                response.setPayload("User updated successfully");
+                response.setHeader("Access-Control-Allow-Origin", "*");
+                return response;
+            } else {
+                return error("No user found with the id: " + id.toString());
+            }
+        } else {
+            return error("Database error: " + result.message());
+        } 
     }
 }
