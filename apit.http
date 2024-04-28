@@ -14,3 +14,14 @@ Content-Type: application/json
     "email": "cloby99@gmail.com",
     "mobileNumber": "742321242"
 }
+
+### PUT user
+PUT http://localhost:8080/user/4
+Content-Type: application/json
+
+{
+    "name": "AnneDlay",
+    "userName": "cloby99",
+    "email": "cloby99@gmail.com",
+    "mobileNumber": "742321242" 
+}

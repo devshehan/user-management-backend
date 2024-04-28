@@ -1,7 +1,7 @@
 import ballerina/http;
+import ballerina/sql;
 import ballerina/time;
 import ballerinax/postgresql;
-import ballerina/sql;
 
 type User record {|
     readonly int id;
@@ -11,7 +11,7 @@ type User record {|
 
     @sql:Column {name: "user_name"}
     string userName;
-    
+
     @sql:Column {name: "email"}
     string email;
 
@@ -40,7 +40,7 @@ type UserNotFound record {|
 // DATABASE CONNECTION
 postgresql:Client dbClient = check new ("localhost", "postgres", "1111", "userdb", 5432);
 
-@http:ServiceConfig{
+@http:ServiceConfig {
     cors: {
         allowOrigins: ["http://localhost:3000"]
     }
@@ -49,13 +49,14 @@ service / on new http:Listener(8080) {
 
     resource function get users() returns User[]|error {
         stream<User, sql:Error?> userStream = dbClient->query(`SELECT * FROM users`);
-        return from var user in userStream select user;
+        return from var user in userStream
+            select user;
     }
 
     resource function get user/[int id]() returns User|UserNotFound|error {
 
         User|sql:Error user = dbClient->queryRow(`SELECT * FROM users WHERE id = ${id}`);
-        
+
         if user is sql:NoRowsError {
             UserNotFound userNotFound = {
                 body: {
@@ -75,5 +76,37 @@ service / on new http:Listener(8080) {
                                                         (${newUser.name}, ${newUser.userName}, ${newUser.email}, ${newUser.mobileNumber})`;
         _ = check dbClient->execute(query);
         return http:CREATED;
+    }
+
+    resource function delete user/[int id]() returns http:NoContent|error {
+        _ = check dbClient->execute(`DELETE FROM users WHERE id = ${id};`);
+        return http:NO_CONTENT;
+    }
+
+    // resource function put user(int id, @http:Payload NewUser newUser) returns http:Accepted|error {
+
+    //     sql:ParameterizedQuery query = `UPDATE users SET name = ${newUser.name},
+    //                                                         user_name = ${newUser.userName},
+    //                                                         email = ${newUser.email},
+    //                                                         mobile_number = ${newUser.mobileNumber}
+    //                                                         WHERE id = ${id}
+    //                                                         `;
+
+    //     sql:ExecutionResult|sql:Error result = dbClient->execute(query);
+
+    //     if result is sql:ExecutionResult {
+    //         if result.affectedRowCount > 0 {
+    //             return http:ACCEPTED;
+    //         } else {
+    //             return error("No user found with the id: " + id.toString());
+    //         }
+    //     } else {
+    //         return error("Database error: " + result.message());
+    //     }     
+
+    // }
+
+    resource function put user(int id, @http:Payload NewUser newUser) returns http:Accepted|error {
+        
     }
 }
