@@ -2,14 +2,7 @@ import ballerina/http;
 import ballerina/sql;
 import ballerina/time;
 import ballerinax/postgresql;
-
-configurable string host = ?;
-configurable string username = ?;
-configurable string password = ?;
-configurable string database = ?;
-configurable int port = ?;
-
-postgresql:Client dbClient = check new (host, username, password, database, port);
+import ballerina/os;
 
 type User record {|
     readonly int id;
@@ -45,6 +38,14 @@ type UserNotFound record {|
     ErrorDetails body;
 |};
 
+// DATABASE CONNECTION
+string host = os:getEnv("DB_HOST") != "" ? os:getEnv("DB_HOST") : "localhost";
+string username = os:getEnv("DB_USERNAME") != "" ? os:getEnv("DB_USERNAME") : "postgres";
+string password = os:getEnv("DB_PASSWORD") != "" ? os:getEnv("DB_PASSWORD") : "1111";
+string database = os:getEnv("DB_DATABASE") != "" ? os:getEnv("DB_DATABASE") : "userdb";
+int port = os:getEnv("DB_PORT") != "" ? check 'int:fromString(os:getEnv("DB_PORT")) : 5432;
+
+postgresql:Client dbClient = check new (host, username, password, database, port);
 
 @http:ServiceConfig {
     cors: {
