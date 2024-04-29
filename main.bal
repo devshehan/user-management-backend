@@ -38,7 +38,7 @@ type UserNotFound record {|
     ErrorDetails body;
 |};
 
-// DATABASE CONNECTION
+// DATABASE CONNECTION - SETUP
 string host = os:getEnv("DB_HOST") != "" ? os:getEnv("DB_HOST") : "localhost";
 string username = os:getEnv("DB_USERNAME") != "" ? os:getEnv("DB_USERNAME") : "postgres";
 string password = os:getEnv("DB_PASSWORD") != "" ? os:getEnv("DB_PASSWORD") : "1111";
